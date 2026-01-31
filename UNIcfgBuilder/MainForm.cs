@@ -28,6 +28,9 @@ namespace CoordinateSorter
             chkOptimizeRoute = new CheckBox();
             ((System.ComponentModel.ISupportInitialize)dgvResults).BeginInit();
             SuspendLayout();
+            // 
+            // btnLoadFiles
+            // 
             btnLoadFiles.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
             btnLoadFiles.Location = new Point(14, 14);
             btnLoadFiles.Margin = new Padding(4, 3, 4, 3);
@@ -37,6 +40,9 @@ namespace CoordinateSorter
             btnLoadFiles.Text = "Load JSON Files";
             btnLoadFiles.UseVisualStyleBackColor = true;
             btnLoadFiles.Click += btnLoadFiles_Click;
+            // 
+            // btnSort
+            // 
             btnSort.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
             btnSort.Location = new Point(14, 127);
             btnSort.Margin = new Padding(4, 3, 4, 3);
@@ -46,6 +52,9 @@ namespace CoordinateSorter
             btnSort.Text = "Sort Waypoints";
             btnSort.UseVisualStyleBackColor = true;
             btnSort.Click += btnSort_Click;
+            // 
+            // btnExport
+            // 
             btnExport.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
             btnExport.Location = new Point(204, 127);
             btnExport.Margin = new Padding(4, 3, 4, 3);
@@ -55,6 +64,9 @@ namespace CoordinateSorter
             btnExport.Text = "Export Results";
             btnExport.UseVisualStyleBackColor = true;
             btnExport.Click += btnExport_Click;
+            // 
+            // dgvResults
+            // 
             dgvResults.AllowUserToAddRows = false;
             dgvResults.AllowUserToDeleteRows = false;
             dgvResults.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
@@ -64,8 +76,11 @@ namespace CoordinateSorter
             dgvResults.Name = "dgvResults";
             dgvResults.ReadOnly = true;
             dgvResults.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            dgvResults.Size = new Size(897, 427);
+            dgvResults.Size = new Size(1003, 427);
             dgvResults.TabIndex = 0;
+            // 
+            // lblStatus
+            // 
             lblStatus.AutoSize = true;
             lblStatus.ForeColor = Color.Blue;
             lblStatus.Location = new Point(14, 179);
@@ -74,6 +89,9 @@ namespace CoordinateSorter
             lblStatus.Size = new Size(129, 15);
             lblStatus.TabIndex = 1;
             lblStatus.Text = "Ready - No files loaded";
+            // 
+            // lblInfo
+            // 
             lblInfo.AutoSize = true;
             lblInfo.Location = new Point(14, 63);
             lblInfo.Margin = new Padding(4, 0, 4, 0);
@@ -81,6 +99,9 @@ namespace CoordinateSorter
             lblInfo.Size = new Size(396, 15);
             lblInfo.TabIndex = 5;
             lblInfo.Text = "Load multiple JSON files to merge them, then sort waypoints by proximity";
+            // 
+            // chkOptimizeRoute
+            // 
             chkOptimizeRoute.AutoSize = true;
             chkOptimizeRoute.Checked = true;
             chkOptimizeRoute.CheckState = CheckState.Checked;
@@ -91,9 +112,12 @@ namespace CoordinateSorter
             chkOptimizeRoute.TabIndex = 4;
             chkOptimizeRoute.Text = "Optimize route (nearest neighbor algorithm)";
             chkOptimizeRoute.UseVisualStyleBackColor = true;
+            // 
+            // MainForm
+            // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(925, 647);
+            ClientSize = new Size(1031, 647);
             Controls.Add(dgvResults);
             Controls.Add(lblStatus);
             Controls.Add(btnExport);
@@ -104,7 +128,6 @@ namespace CoordinateSorter
             Icon = (Icon)resources.GetObject("$this.Icon");
             Margin = new Padding(4, 3, 4, 3);
             Name = "MainForm";
-            ShowInTaskbar = false;
             StartPosition = FormStartPosition.CenterScreen;
             Text = "Waypoint Sorter - https://github.com/kepacode";
             ((System.ComponentModel.ISupportInitialize)dgvResults).EndInit();
@@ -127,18 +150,26 @@ namespace CoordinateSorter
                 ofd.Filter = "JSON files (*.json)|*.json|All files (*.*)|*.*";
                 ofd.Multiselect = true;
                 ofd.Title = "Select JSON waypoint files to merge";
+                ofd.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
 
                 if (ofd.ShowDialog() == DialogResult.OK)
                 {
                     allWaypoints.Clear();
                     int totalRecords = 0;
                     List<string> loadedFiles = new List<string>();
+                    List<string> failedFiles = new List<string>();
+
+                    // Show how many files were selected
+                    string debugInfo = $"Selected {ofd.FileNames.Length} file(s)\n\n";
 
                     foreach (string fileName in ofd.FileNames)
                     {
                         try
                         {
+                            debugInfo += $"Processing: {Path.GetFileName(fileName)}\n";
                             string jsonContent = File.ReadAllText(fileName);
+                            debugInfo += $"  File size: {jsonContent.Length} characters\n";
+                            
                             var options = new JsonSerializerOptions
                             {
                                 PropertyNameCaseInsensitive = true
@@ -151,25 +182,55 @@ namespace CoordinateSorter
                                 allWaypoints.AddRange(data);
                                 totalRecords += data.Count;
                                 loadedFiles.Add(Path.GetFileName(fileName));
+                                debugInfo += $"  Loaded: {data.Count} waypoints\n";
+                            }
+                            else
+                            {
+                                debugInfo += $"  Warning: File contained no waypoints\n";
+                                failedFiles.Add(Path.GetFileName(fileName));
                             }
                         }
                         catch (Exception ex)
                         {
-                            MessageBox.Show($"Error loading {Path.GetFileName(fileName)}:\n{ex.Message}", 
+                            failedFiles.Add(Path.GetFileName(fileName));
+                            debugInfo += $"  ERROR: {ex.Message}\n";
+                            MessageBox.Show($"Error loading {Path.GetFileName(fileName)}:\n\n{ex.Message}\n\nStack trace:\n{ex.StackTrace}", 
                                 "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         }
+                        debugInfo += "\n";
+                    }
+
+                    // Show debug info
+                    if (System.Diagnostics.Debugger.IsAttached || ofd.FileNames.Length > 1)
+                    {
+                        System.Diagnostics.Debug.WriteLine(debugInfo);
                     }
 
                     if (totalRecords > 0)
                     {
-                        lblStatus.Text = $"Loaded {totalRecords} waypoints from {loadedFiles.Count} file(s): {string.Join(", ", loadedFiles)}";
-                        lblStatus.ForeColor = System.Drawing.Color.Green;
+                        string statusMessage = $"✓ Loaded {totalRecords} waypoints from {loadedFiles.Count} file(s)";
+                        if (failedFiles.Count > 0)
+                        {
+                            statusMessage += $" ({failedFiles.Count} failed: {string.Join(", ", failedFiles)})";
+                        }
+                        lblStatus.Text = statusMessage;
+                        lblStatus.ForeColor = failedFiles.Count > 0 ? System.Drawing.Color.DarkOrange : System.Drawing.Color.Green;
                         DisplayData(allWaypoints);
+                        
+                        // Show summary message box
+                        string summary = $"Successfully merged {loadedFiles.Count} file(s):\n\n";
+                        foreach (var file in loadedFiles)
+                        {
+                            summary += $"✓ {file}\n";
+                        }
+                        summary += $"\nTotal waypoints: {totalRecords}";
+                        MessageBox.Show(summary, "Files Loaded", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
                     else
                     {
-                        lblStatus.Text = "No waypoints loaded";
+                        lblStatus.Text = "⚠ No waypoints loaded - check file format";
                         lblStatus.ForeColor = System.Drawing.Color.Red;
+                        MessageBox.Show(debugInfo, "Loading Failed", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     }
                 }
             }
@@ -195,6 +256,7 @@ namespace CoordinateSorter
 
             if (chkOptimizeRoute.Checked)
             {
+                // Nearest neighbor algorithm - optimal route
                 sorted = OptimizeRoute(allWaypoints);
                 lblStatus.Text = $"Sorted {sorted.Count} waypoints using nearest neighbor optimization";
             }
@@ -290,6 +352,7 @@ namespace CoordinateSorter
             }
         }
 
+        // Calculate 3D Euclidean distance
         private double Calculate3DDistance(double x1, double y1, double z1, double x2, double y2, double z2)
         {
             double dx = x2 - x1;
@@ -298,6 +361,7 @@ namespace CoordinateSorter
             return Math.Sqrt(dx * dx + dy * dy + dz * dz);
         }
 
+        // Nearest neighbor algorithm to optimize route
         private List<Waypoint> OptimizeRoute(List<Waypoint> waypoints)
         {
             if (waypoints.Count <= 2)
