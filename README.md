@@ -1,15 +1,13 @@
 # 🇺🇸 Waypoint Sorter - Made by kepacode
 
-A C# WinForms application that merges multiple JSON files containing 3D waypoints and sorts them by proximity to create an optimized route.
+A C# WinForms application that merges multiple JSON files containing 3D waypoints and sorts them by proximity using a simple nearest-neighbor approach.
 
 ## Features
 
 - **Merge Multiple Files**: Load and combine waypoints from multiple JSON files
-- **Smart Sorting Algorithms**:
-  - **Nearest Neighbor Optimization** (default): Creates an efficient route by always traveling to the closest unvisited waypoint
-  - **Simple Distance Sort**: Sorts all waypoints by distance from the first point
+- **Simple Nearest Neighbor Sorting**: Always travels to the closest unvisited waypoint
+- **No Complex Formulas**: Uses simple coordinate difference comparison
 - **Visual Data Grid**: View all waypoints with their coordinates and properties
-- **Route Distance Calculation**: Shows total distance of the optimized route
 - **Export Results**: Save merged and sorted waypoints to a new JSON file
 
 ## Requirements
@@ -65,71 +63,57 @@ The application expects JSON files with waypoint data in this format:
 ## Usage
 
 1. **Load Files**: Click "Load JSON Files" and select one or more waypoint JSON files
+   - **IMPORTANT**: Hold CTRL while clicking to select multiple files
    - All waypoints from selected files will be merged into one list
-   - Status bar shows how many waypoints were loaded from how many files
+   - A message box will confirm how many files and waypoints were loaded
 
 2. **Sort Waypoints**: Click "Sort Waypoints"
-   - **Optimize route (checked)**: Uses nearest neighbor algorithm to find an efficient path
-   - **Optimize route (unchecked)**: Simple sort by distance from first waypoint
-   - Shows total route distance after sorting
+   - Uses nearest neighbor algorithm: always goes to the closest waypoint
+   - Simple distance calculation: sum of X, Y, Z differences (no formulas)
+   - Status bar shows completion message
 
 3. **Export**: Click "Export Results" to save the merged and sorted waypoints
    - Saves as a JSON file in the same format as input
    - Can be re-imported into your application
 
-## Sorting Algorithms
+## How Sorting Works
 
-### Nearest Neighbor Optimization (Recommended)
-This algorithm creates an efficient route by:
-1. Starting at the first waypoint
-2. Finding the closest unvisited waypoint
-3. Moving to that waypoint
-4. Repeating until all waypoints are visited
+The sorting algorithm is very simple:
 
-This produces a route where each step travels to the nearest available point, minimizing backtracking.
+1. **Start** at the first waypoint
+2. **Compare** distances to all remaining waypoints
+   - Distance = |X₂-X₁| + |Y₂-Y₁| + |Z₂-Z₁|
+   - Just adding up the differences, no squares or roots
+3. **Move** to the waypoint with the smallest distance
+4. **Repeat** until all waypoints are visited
 
-### Simple Distance Sort
-Sorts all waypoints by their straight-line distance from the first waypoint. Simpler but may not produce the most efficient route.
-
-## Distance Calculation
-
-The application uses the **3D Euclidean distance formula**:
-
-```
-distance = √((x₂-x₁)² + (y₂-y₁)² + (z₂-z₁)²)
-```
-
-This calculates the straight-line distance between two points in 3D space.
+This creates an efficient route without using complex mathematical formulas.
 
 ## Sample Data
 
-Two sample waypoint files are included based on your uploaded files:
+Two sample waypoint files are included:
 - `sample_waypoints1.json` - 9 waypoints
-- `sample_waypoints2.json` - Additional waypoints
+- `sample_waypoints2.json` - 102 waypoints
 
-Load both to test the merging and sorting functionality!
+Load both to test the merging functionality!
 
 ## Tips
 
-- For best route optimization, use the "Optimize route" checkbox (enabled by default)
-- The order in the data grid shows the sequence of waypoints in the optimized route
-- Total route distance is shown in the status bar after sorting
-- You can reload and re-sort anytime with different settings
-
-----------------------------------------
+- Always use CTRL+Click to select multiple files in the file dialog
+- The order in the data grid shows the sequence after sorting
+- You can reload and re-sort anytime
+- Check TROUBLESHOOTING.md if you have issues loading multiple files
 
 # 🇯🇵 ウェイポイントソーター-kepacodeによって作られました
 
-3Dウェイポイントを含む複数のJSONファイルをマージし、近接でソートして最適化されたルートを作成するC#WinFormsアプリケーション。
+3Dウェイポイントを含む複数のJSONファイルをマージし、単純な最近傍アプローチを使用して近接によってソートするC#WinFormsアプリケーション。
 
 #＃特長
 
 -**複数のファイルをマージ**：複数のJSONファイルからウェイポイントをロードして結合
--**スマートソートアルゴリズム**:
-  -**最近傍最適化**(デフォルト):常に最も近い未訪問のウェイポイントに移動することにより、効率的なルートを作成します
-  -**単純な距離ソート**：最初の点からの距離ですべてのウェイポイントをソートします
+-**単純な最近傍ソート**：常に最も近い未訪問のウェイポイントに移動します
+-**複雑な式はありません**：単純な座標差比較を使用しています
 -**ビジュアルデータグリッド**：その座標とプロパティを持つすべてのウェイポイントを表示
--**ルート距離計算**：最適化されたルートの総距離を示しています
 -**エクスポート結果**：新しいJSONファイルにマージされ、ソートされたウェイポイントを保存
 
 ##要件
@@ -137,7 +121,7 @@ Load both to test the merging and sorting functionality!
 -.NET6.0以降
 -Windows OS(WinFormsの要件)
 
-##アプリケーションの構築
+##ビルの適用
 
 1. プロジェクトディレクトリでターミナルを開く
 2. 次のコマンドを実行します:
@@ -159,18 +143,18 @@ Load both to test the merging and sorting functionality!
 ```json
 [
   {
-    "color": 4294967295,
-    "name": "Generic Point 0",
-    "x": -1396.287109375,
-    "y": 199.22874450683594,
-    "z": 7748.14111328125
+    "色":4294967295,
+    "名前":"一般的なポイント0",
+    "x":-1396.287109375,
+    "y":199.22874450683594,
+    "z":7748.14111328125
   },
   {
-    "color": 4294967295,
-    "name": "Generic Point 1",
-    "x": -1932.005615234375,
-    "y": 95.70904541015625,
-    "z": 8597.9267578125
+    "色":4294967295,
+    "名前":"一般的なポイント1",
+    "x":-1932.005615234375,
+    "y":95.70904541015625,
+    "z":8597.9267578125
   }
 ]
 ```
@@ -185,53 +169,43 @@ Load both to test the merging and sorting functionality!
 ##使用法
 
 1. **Load Files**:"Load JSON Files"をクリックし、一つ以上のwaypoint JSONファイルを選択します
+   -**重要**：複数のファイルを選択するには、クリックしながらCTRLキーを押したまま
    -選択したファイルからのすべてのウェイポイントは、一つのリストにマージされます
-   -ステータスバーは、どのように多くのファイルからロードされたどのように多くのウェイポイントを示しています
+   -メッセージボックスは、ロードされたファイルとウェイポイントの数を確認します
 
 2. **ソートウェイポイント**：「ソートウェイポイント」をクリックします。
-   -**ルートの最適化（チェック）**：効率的なパスを見つけるために最近傍アルゴリズムを使用しています
-   -**ルートを最適化する（チェックされていない）**：最初のウェイポイントからの距離による単純なソート
-   -ソート後の総ルート距離を示しています
+   -最近傍アルゴリズムを使用しています：常に最も近いウェイポイントに移動します
+   -単純な距離計算：X、Y、Zの差の合計（式なし）
+   -ステータスバーに完了メッセージが表示されます
 
 3. **エクスポート**：マージされ、ソートされたウェイポイントを保存するには、"結果のエクスポート"をク
    -入力と同じ形式でJSONファイルとして保存します
    -あなたの適用に再輸入することができます
 
-#＃ソートアルゴリズム
+##ソートの仕組み
 
-###最近傍最適化(推奨)
-このアルゴリズムは、次の方法で効率的なルートを作成します:
-1. 最初のウェイポイントから始まる
-2. 最も近い未訪問のウェイポイントを見つける
-3. そのウェイポイントに移動する
-4. すべてのウェイポイントが訪問されるまで繰り返す
+ソートアルゴリズムは非常に簡単です:
 
-これにより、各ステップが最も近い利用可能なポイントに移動するルートが生成され、バックトラッキングが最小限に抑えられます。
+1. **スタート**最初のウェイポイントで
+2. **比較**残りのすべてのウェイポイントへの距離
+    距離=|X₂-X₁|+|Y₂-Y₁|+|Z₂-Z₁|
+   -違いを合計するだけで、正方形や根はありません
+3. **移動**最小の距離でウェイポイントに
+4. **すべてのウェイポイントが訪問されるまで**を繰り返します
 
-##＃単純な距離ソート
-うすべての頂点により直線距離からのwaypoint. より単純ですが、最も効率的なルートを生成しない可能性があります。
-
-##距離を計算
-
-を利用しての**3Dユークリッド距離式**:
-
-```
-距離=√((x₂-x₁)2+(y₂-y₁)2+(z₂-z₁)2)
-```
-
-この計算は、直線距離点を3D空間です。
+これにより、複雑な数式を使用せずに効率的なルートが作成されます。
 
 ##サンプルデータ
 
-二つのサンプル点のファイルを含むに基づくアップロードされたファイル:
--'sample_waypoints1.json`-9頂点
--`sample_waypoints2.json`-頂点を追加
+2つのサンプルウェイポイントファイルが含まれています:
+-'sample_waypoints1.json'-9ウェイポイント
+-'sample_waypoints2.json'-102ウェイポイント
 
-荷重の両方を試す場合、ソート機能!
+両方をロードしてマージ機能をテストしてください!
 
-##ヒント
+#＃ヒント
 
--最適なルートの最適化のために、（デフォルトで有効になっている）"ルートの最適化"チェックボックスを使用します
--データグリッド内の順序は、最適化されたルート内のウェイポイントのシーケンスを示しています
--総ルート距離は、ソート後のステータスバーに表示されます
--あなたは、異なる設定でいつでもリロードし、再ソートすることができます
+-ファイルダイアログで複数のファイルを選択するには、常にCTRL+クリックを使用します
+-データグリッド内の順序は、ソート後のシーケンスを示しています
+-いつでもリロードして再ソートすることができます
+-チェックTROUBLESHOOTING.md 複数のファイルの読み込みに問題がある場合
