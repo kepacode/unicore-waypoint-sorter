@@ -101,7 +101,7 @@ namespace CoordinateSorter
             Margin = new Padding(4, 3, 4, 3);
             Name = "MainForm";
             StartPosition = FormStartPosition.CenterScreen;
-            Text = "Waypoint Sorter - https://github.com/kepacode";
+            Text = "Waypoint Sorter - https://github.com/xivi-pw";
             ((System.ComponentModel.ISupportInitialize)dgvResults).EndInit();
             ResumeLayout(false);
             PerformLayout();
